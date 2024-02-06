@@ -31,8 +31,5 @@ function ballMove() {
     if (ball.x - ball.radius < 0) {
         ball.dx *= -1;
     }
-}
-
-function ballDraw() {
-    context.beginPath();
+    if (ball.x + ball.radius > paddleX && ball.y + ball.radius > canvas
     context.arc(ball
