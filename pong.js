@@ -32,4 +32,4 @@ function ballMove() {
         ball.dx *= -1;
     }
     if (ball.x + ball.radius > paddleX && ball.y + ball.radius > canvas
-    context.arc(ball))
+    context.arc(ball)
