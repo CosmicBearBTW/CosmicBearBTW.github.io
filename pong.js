@@ -1,52 +1,103 @@
-const canvas = document.getElementById('gameCanvas');
-const context = canvas.getContext('2d');
+// Get the canvas element and its 2D rendering context
+const canvas = document.getElementById('pongCanvas');
+const ctx = canvas.getContext('2d');
 
-canvas.width = 800;
-canvas.height = 400;
+// Define the ball's properties
+let ballX = canvas.width / 2;
+let ballY = canvas.height / 2;
+let ballSpeedX = 2;
+let ballSpeedY = -2;
 
-const ball = { x: canvas.width / 2, y: canvas.height - 30, radius: 10, speed: 2, dx: 2, dy: 2 };
-const paddleWidth = 75, paddleHeight = 10, paddleDiff = 25;
-let paddleX = (canvas.width - paddleWidth) / 2;
+// Define the paddles' properties
+let paddle1Y = canvas.height / 2;
+let paddle2Y = canvas.height / 2;
+let paddleHeight = 100;
+let paddleWidth = 10;
 
-function animate() {
-    context.clearRect(0, 0, canvas.width, canvas.height);
-    ballMove();
-    ballDraw();
-    paddleDraw();
-    requestAnimationFrame(animate);
+// Define game variables
+let gameOver = false;
+let player1Score = 0;
+let player2Score = 0;
+const winningScore = 3;
+
+// Handle key presses
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'w' && paddle1Y > 0) {
+    paddle1Y -= 10;
+  } else if (event.key === 's' && paddle1Y < canvas.height - paddleHeight) {
+    paddle1Y += 10;
+  }
+});
+
+// Update the game state and draw the game
+function update() {
+  if (!gameOver) {
+    // Move the ball
+    ballX += ballSpeedX;
+    ballY += ballSpeedY;
+
+    // Check for ball collisions with the paddles
+    if (
+      ballY + 10 >= paddle1Y &&
+      ballY - 10 <= paddle1Y + paddleHeight &&
+      ballX <= paddleWidth
+    ) {
+      ballSpeedX = -ballSpeedX;
+    } else if (
+      ballY + 10 >= paddle2Y &&
+      ballY - 10 <= paddle2Y + paddleHeight &&
+      ballX >= canvas.width - paddleWidth
+    ) {
+      ballSpeedX = -ballSpeedX;
+    }
+
+    // Check for ball collisions with the top and bottom of the canvas
+    if (ballY <= 0 || ballY >= canvas.height) {
+      ballSpeedY = -ballSpeedY;
+    }
+
+    // Update the paddles' positions based on key presses
+    paddle1Y = Math.min(
+      Math.max(paddle1Y, 0),
+      canvas.height - paddleHeight
+    );
+
+    // Check if the ball has gone out of bounds, update scores, and start a new game if necessary
+    if (ballX <= 0) {
+      player2Score++;
+      if (player2Score >= winningScore) {
+        gameOver = true;
+      } else {
+        resetBall();
+      }
+    } else if (ballX >= canvas.width) {
+      player1Score++;
+      if (player1Score >= winningScore) {
+        gameOver = true;
+      } else {
+        resetBall();
+      }
+    }
+
+    // Draw the game objects
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawPaddle1();
+    drawPaddle2();
+    drawBall();
+    drawScore();
+  }
 }
 
-function ballMove() {
-    ball.x += ball.dx;
-    ball.y += ball.dy;
-    if (ball.y + ball.radius > canvas.height) {
-        ball.dy *= -1;
-    }
-    if (ball.y - ball.radius < 0) {
-        ball.dy *= -1;
-    }
-    if (ball.x + ball.radius > canvas.width) {
-        ball.dx *= -1;
-    }
-    if (ball.x - ball.radius < 0) {
-        ball.dx *= -1;
-    }
-    if (ball.x + ball.radius > paddleX && ball.y + ball.radius > canvas.height - paddleHeight - 5 && ball.y - ball.radius < paddleHeight + 5) {
-        ball.dy *= -1;
-    }
+// Reset the ball's position
+function resetBall() {
+  ballX = canvas.width / 2;
+  ballY = canvas.height / 2;
+  ballSpeedX = 2;
+  ballSpeedY = -2;
 }
 
-function ballDraw() {
-    context.beginPath();
-    context.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2, false);
-    context.fillStyle = 'white';
-    context.fill();
-    context.closePath();
-}
-
-function paddleDraw() {
-    context.fillStyle = 'white';
-    context.fillRect(paddleX, canvas.height - paddleHeight - 5, paddleWidth, paddleHeight);
-}
-
-animate();
+// Draw the ball
+function drawBall() {
+  ctx.beginPath();
+  ctx.arc(ballX, ballY, 10, 0, Math.PI * 2);
+  ctx.fillStyle
